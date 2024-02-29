@@ -27,4 +27,8 @@ module.exports = {
       throw createError.InternalServerError(error.message);
     }
   },
+  getListConversationService: async (conversation) => {
+    const listConversation = Conversation.find({});
+    return listConversation;
+  },
 };
