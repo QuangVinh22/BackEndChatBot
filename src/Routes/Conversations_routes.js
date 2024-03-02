@@ -6,11 +6,7 @@ const {
 } = require("../Controller/ConversationController");
 const { verifyAccessToken } = require("../Service/JwtService");
 
-conversationsRoutesApi.post(
-  "/create",
-  verifyAccessToken,
-  createConversationsController
-);
+conversationsRoutesApi.post("/create", createConversationsController);
 conversationsRoutesApi.get(
   "/getList",
   verifyAccessToken,

@@ -28,7 +28,7 @@ module.exports = {
     }
   },
   getListConversationService: async (conversation) => {
-    const listConversation = Conversation.find({});
+    const listConversation = await Conversation.find({}).populate("messages");
     return listConversation;
   },
 };

@@ -1,4 +1,6 @@
 const express = require("express");
+const cors = require("cors");
+
 require("dotenv").config();
 const createError = require(`http-errors`);
 const connection = require("./src/Config/database");
@@ -12,6 +14,20 @@ const client = require("./src/helpers/connect-redis");
 
 //
 const app = express();
+//Cors;
+app.use(cors());
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*"); // Cho phép tất cả các nguồn gốc
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+  );
+  if (req.method === "OPTIONS") {
+    res.header("Access-Control-Allow-Methods", "PUT, POST, PATCH, DELETE, GET");
+    return res.status(200).json({});
+  }
+  next();
+});
 //
 app.use(express.json()); // Used to parse JSON bodies
 app.use(express.urlencoded({ extended: true })); //Parse URL-encoded bodies
