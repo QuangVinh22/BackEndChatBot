@@ -11,17 +11,44 @@ const {
 
 module.exports = {
   createMessageService: async (newmessage) => {
-    if (!newmessage) {
-      throw createError.BadRequest("message is required");
+    if (
+      !newmessage ||
+      !newmessage.text ||
+      !newmessage.conversationId ||
+      !newmessage.sender
+    ) {
+      throw createError.BadRequest(
+        "Message text, sender, and conversationId are required"
+      );
     }
     console.log(newmessage);
     try {
       const createdMessage = await Message.create({
         text: newmessage.text,
+        conversationId: newmessage.conversationId, // Đảm bảo tên trường khớp với schema
+        sender: newmessage.sender, // Đảm bảo bạn có trường này từ request
       });
       return createdMessage;
     } catch (error) {
       throw createError.InternalServerError(error.message);
+    }
+  },
+  getListConversationService: async (messageInConversations) => {
+    if (!messageInConversations) {
+      throw new Error("Conversation ID is required");
+    }
+    try {
+      // Sử dụng conversation hoặc conversationId tùy thuộc vào cách bạn đặt tên trường trong schema của Message
+      const listMessage = await Message.find({
+        conversationId: messageInConversations.conversationId,
+      });
+      if (!listMessage) {
+        throw createError.BadRequest("Not Found conversations");
+      }
+      return listMessage;
+    } catch (error) {
+      // Xử lý lỗi tại đây, ví dụ: throw new Error(error.message);
+      throw createError.InternalServerError(error.message); // Hoặc bạn có thể quyết định throw một lỗi cụ thể tùy thuộc vào logic ứng dụng của bạn
     }
   },
 };
