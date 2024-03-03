@@ -16,12 +16,26 @@ module.exports = {
     }
 
     try {
-      const isCreatedconversations = await Conversation.create({
-        name: conversation.name,
-        userInfor: conversation._id,
-        messages: conversation.messages,
-      });
-      return isCreatedconversations;
+      if (conversation.type === "EMPTY-PROJECTS") {
+        const createdConversation = await Conversation.create({
+          name: conversation.name,
+          userInfor: conversation._id,
+        });
+        return createdConversation;
+      }
+      if (conversation.type === "ADD-MESSAGES") {
+        let existingConversation = await Conversation.findById(
+          conversation._id
+        );
+        if (!existingConversation) {
+          throw createError.NotFound("Conversation not found");
+        }
+        conversation.messages.forEach((message) => {
+          existingConversation.messages.push(message);
+        });
+        let updatedConversation = await existingConversation.save();
+        return updatedConversation;
+      }
     } catch (error) {
       console.log(error);
       throw createError.InternalServerError(error.message);

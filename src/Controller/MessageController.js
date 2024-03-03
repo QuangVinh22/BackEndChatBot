@@ -18,7 +18,7 @@ module.exports = {
   },
   getListConversationsController: async (req, res, next) => {
     try {
-      let conversations = await getListConversationService(req.body);
+      let conversations = await getListConversationService(req.query);
       return res.status(200).json({
         EC: 0,
         data: conversations,
