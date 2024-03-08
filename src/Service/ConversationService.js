@@ -23,12 +23,16 @@ module.exports = {
         });
         return createdConversation;
       }
+
       if (conversation.type === "ADD-MESSAGES") {
         let existingConversation = await Conversation.findById(
           conversation._id
         );
         if (!existingConversation) {
           throw createError.NotFound("Conversation not found");
+        }
+        if (conversation.name) {
+          existingConversation.name = conversation.name;
         }
         conversation.messages.forEach((message) => {
           existingConversation.messages.push(message);
