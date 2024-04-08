@@ -14,7 +14,9 @@ module.exports = {
     if (!conversation) {
       throw createError.BadRequest("message is required");
     }
-
+    if (!conversation.userInfor) {
+      throw createError.BadRequest("User information is required");
+    }
     try {
       if (conversation.type === "EMPTY-PROJECTS") {
         const createdConversation = await Conversation.create({

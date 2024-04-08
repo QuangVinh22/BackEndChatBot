@@ -10,7 +10,7 @@ const messageRoutesApi = require("./src/Routes/Message_routes");
 //Routes
 
 //Redis
-const client = require("./src/helpers/connect-redis");
+// const client = require("./src/helpers/connect-redis");
 
 //
 const app = express();
@@ -65,3 +65,4 @@ connection()
   .catch((error) => {
     console.error("Failed to connect to DB", error);
   });
+module.exports = app;

@@ -11,23 +11,18 @@ const {
 
 module.exports = {
   createMessageService: async (newmessage) => {
-    if (
-      !newmessage ||
-      !newmessage.text ||
-      !newmessage.conversationId ||
-      !newmessage.sender
-    ) {
-      throw createError.BadRequest(
-        "Message text, sender, and conversationId are required"
-      );
-    }
     console.log(newmessage);
     try {
       const createdMessage = await Message.create({
         text: newmessage.text,
         conversationId: newmessage.conversationId, // Đảm bảo tên trường khớp với schema
-        sender: newmessage.sender, // Đảm bảo bạn có trường này từ request
+        senderType: newmessage.senderType, // Đảm bảo bạn có trường này từ request
       });
+      await Conversation.findByIdAndUpdate(
+        newmessage.conversationId,
+        { $push: { messages: createdMessage._id } },
+        { new: true }
+      );
       return createdMessage;
     } catch (error) {
       throw createError.InternalServerError(error.message);
