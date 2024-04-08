@@ -1,4 +1,5 @@
 const Message = require("../Models/Message_model");
+const Conversation = require("../Models/Conversations_model");
 const createError = require("http-errors");
 const { userValidate } = require("../helpers/validation");
 const client = require("../helpers/connect-redis");
