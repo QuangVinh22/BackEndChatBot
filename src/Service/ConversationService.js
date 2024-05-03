@@ -21,7 +21,7 @@ module.exports = {
       if (conversation.type === "EMPTY-PROJECTS") {
         const createdConversation = await Conversation.create({
           name: conversation.name,
-          userInfor: conversation._id,
+          userInfor: conversation.userInfor,
         });
         return createdConversation;
       }

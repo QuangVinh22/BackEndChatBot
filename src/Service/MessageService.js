@@ -11,21 +11,38 @@ const {
 } = require("./JwtService");
 
 module.exports = {
-  createMessageService: async (newmessage) => {
-    console.log(newmessage);
+  createMessageService: async (newMessage) => {
     try {
+      // First, check if the conversation exists
+      const conversationExists = await Conversation.findById(
+        newMessage.conversationId
+      );
+      if (!conversationExists) {
+        throw createError.NotFound("Conversation not found");
+      }
+
+      // If the conversation exists, create the message
       const createdMessage = await Message.create({
-        text: newmessage.text,
-        conversationId: newmessage.conversationId, // Đảm bảo tên trường khớp với schema
-        senderType: newmessage.senderType, // Đảm bảo bạn có trường này từ request
+        text: newMessage.text,
+        conversationId: newMessage.conversationId, // Ensure field names match schema
+        senderType: newMessage.senderType, // Ensure you have this field from the request
       });
-      await Conversation.findByIdAndUpdate(
-        newmessage.conversationId,
+
+      // Then, update the conversation to add the new message's ID
+      const updatedConversation = await Conversation.findByIdAndUpdate(
+        newMessage.conversationId,
         { $push: { messages: createdMessage._id } },
         { new: true }
       );
+
+      // Check if the conversation update was successful
+      if (!updatedConversation) {
+        throw createError.InternalServerError("Failed to update conversation");
+      }
+
       return createdMessage;
     } catch (error) {
+      // This captures any errors including not found and internal server errors
       throw createError.InternalServerError(error.message);
     }
   },

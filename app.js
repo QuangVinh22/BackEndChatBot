@@ -35,11 +35,16 @@ app.use(express.urlencoded({ extended: true })); //Parse URL-encoded bodies
 app.use("/v1/Auth", AuthRoutes);
 app.use("/v1/Conversations", conversationsRoutes);
 app.use("/v1/Messages", messageRoutesApi);
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send("Something broke!");
+});
 
 //
 app.get("/", (req, res) => {
   res.send("hell world");
 });
+
 const port = process.env.PORT || 8888;
 const hostname = process.env.HOST_NAME;
 

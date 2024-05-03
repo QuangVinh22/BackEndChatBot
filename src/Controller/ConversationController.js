@@ -5,6 +5,7 @@ const {
 } = require("../Service/ConversationService");
 module.exports = {
   createConversationsController: async (req, res, next) => {
+    console.log("Received data:", req.body);
     try {
       let conversations = await createConversationService(req.body);
       return res.status(200).json({
