@@ -3,6 +3,7 @@ const conversationsRoutesApi = express.Router();
 const {
   createConversationsController,
   getListConversationsController,
+  deleteConversationsController,
 } = require("../Controller/ConversationController");
 const { verifyAccessToken } = require("../Service/JwtService");
 const rateLimit = require("express-rate-limit");
@@ -20,6 +21,11 @@ conversationsRoutesApi.get(
   "/getList",
   verifyAccessToken,
   getListConversationsController
+);
+conversationsRoutesApi.delete(
+  "/delete/:id",
+
+  deleteConversationsController
 );
 
 module.exports = conversationsRoutesApi;

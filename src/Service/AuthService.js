@@ -26,9 +26,9 @@ module.exports = {
   LoginUserService: async (user) => {
     const { error } = userValidate(user);
     if (error) {
-      throw createError(error.details[0].message);
+      throw createError.BadRequest("Email must be from gmail.com domain");
     }
-    const isExist = await User.findOne({ username: user.email }).exec();
+    const isExist = await User.findOne({ username: user.email });
     if (!isExist) {
       throw createError.NotFound("User have not register ");
     }
@@ -46,13 +46,13 @@ module.exports = {
   RegisterUserService: async (user) => {
     const { error } = userValidate(user);
     if (error) {
-      throw createError(error.details[0].message);
+      throw createError.BadRequest("Email must be from gmail.com domain");
     }
     const isExist = await User.findOne({
       email: user.email,
-    }).exec();
+    });
     if (isExist) {
-      throw createError.Conflict(`${user.email} is ready been register`);
+      throw createError.Conflict(`ConflictError Emai is ready been register`);
     }
     const isCreate = await User.create({
       username: user.email,

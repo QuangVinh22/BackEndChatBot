@@ -10,45 +10,48 @@ const {
 } = require("./JwtService");
 
 module.exports = {
-  createConversationService: async (conversation) => {
-    if (!conversation) {
-      throw createError.BadRequest("message is required");
+  createConversationService: async (conversationData) => {
+    if (!conversationData) {
+      throw new Error("Conversation data is required");
     }
-    if (!conversation.userInfor) {
-      throw createError.BadRequest("User information is required");
-    }
-    try {
-      if (conversation.type === "EMPTY-PROJECTS") {
-        const createdConversation = await Conversation.create({
-          name: conversation.name,
-          userInfor: conversation.userInfor,
-        });
-        return createdConversation;
-      }
 
-      if (conversation.type === "ADD-MESSAGES") {
-        let existingConversation = await Conversation.findById(
-          conversation._id
-        );
-        if (!existingConversation) {
-          throw createError.NotFound("Conversation not found");
-        }
-        if (conversation.name) {
-          existingConversation.name = conversation.name;
-        }
-        conversation.messages.forEach((message) => {
-          existingConversation.messages.push(message);
-        });
-        let updatedConversation = await existingConversation.save();
-        return updatedConversation;
+    if (!conversationData.userInfor) {
+      throw new Error("User information is required");
+    }
+
+    try {
+      const existingConversation = await Conversation.findById(
+        conversationData._id
+      );
+      if (conversationData.type === "ADD-MESSAGES" && existingConversation) {
+        existingConversation.messages.push(...conversationData.messages);
+        return await existingConversation.save();
+      } else {
+        // Đảm bảo rằng kết quả từ việc tạo mới được trả về
+        return await Conversation.create(conversationData);
       }
     } catch (error) {
-      console.log(error);
-      throw createError.InternalServerError(error.message);
+      throw new Error(`Database error: ${error.message}`);
     }
   },
+
   getListConversationService: async (conversation) => {
     const listConversation = await Conversation.find({}).populate("messages");
     return listConversation;
+  },
+  deleteConversations: async (id) => {
+    // Kiểm tra xem hội thoại có tồn tại không trước khi xóa
+    const conversation = await Conversation.findById(id);
+    if (!conversation) {
+      throw createError(404, "Conversation not found");
+    }
+
+    // Nếu tồn tại, tiếp tục xóa
+    const deletedConversations = await Conversation.deleteOne({ _id: id });
+    if (deletedConversations.deletedCount === 0) {
+      throw createError(400, "Failed to delete the conversation");
+    }
+
+    return deletedConversations; // Trả về kết quả của việc xóa
   },
 };

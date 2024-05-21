@@ -1,90 +1,113 @@
-const request = require("supertest");
-const express = require("express");
-const createError = require("http-errors");
+// Import dependencies
+const mongoose = require("mongoose");
+jest.mock("../Models/Conversations_model", () => ({
+  findById: jest.fn(),
+  findByIdAndUpdate: jest.fn(),
+}));
+jest.mock("../Models/Message_model", () => ({
+  create: jest.fn(),
+}));
+
+// CreateError mock
+jest.mock("http-errors", () => ({
+  NotFound: jest.fn((msg) => new Error(msg)),
+  InternalServerError: jest.fn((msg) => new Error(msg)),
+}));
+const redis = require("redis-mock"); // Import redis-mock library
+
+jest.mock("../helpers/connect-redis", () => ({
+  set: jest.fn(),
+  get: jest.fn(),
+}));
+
+// Importing service after mocking
+const { createMessageService } = require("../Service/MessageService");
 const Message = require("../Models/Message_model");
 const Conversation = require("../Models/Conversations_model");
-const messageRoutesApi = require("../Routes/Message_routes");
-const {
-  createMessageService,
-  getListMessageService,
-} = require("../Service/MessageService");
-const conversationsRoutesApi = require("../Routes/Conversations_routes");
-jest.mock("../Models/Message_model");
-jest.mock("../Models/Conversations_model");
-jest.mock("../helpers/connect-redis", () => ({
-  isOpen: false,
-  connect: jest.fn(),
-  quit: jest.fn(),
-}));
-jest.mock("redis", () => ({
-  createClient: jest.fn().mockReturnThis(),
-  connect: jest.fn().mockResolvedValue("OK"),
-  get: jest
-    .fn()
-    .mockImplementation((key, callback) => callback(null, "mockedValue")),
-  set: jest.fn(),
-  on: jest.fn(),
-  ping: jest.fn().mockResolvedValue("PONG"),
-}));
-const app = express();
-app.use(express.json());
-
-app.use("/v1/Messages", messageRoutesApi);
-app.use("/v1/Conversations", conversationsRoutesApi);
-
-describe("Message Service", () => {
-  describe("createMessageService", () => {
-    it("should throw an error if the conversation does not exist", async () => {
-      const newMessage = {
-        text: "Hello",
-        conversationId: "nonExistingId",
-        senderType: "user",
-      };
-
-      Conversation.findById.mockResolvedValue(null);
-
-      await expect(createMessageService(newMessage)).rejects.toThrow(
-        "Conversation not found"
-      );
-    });
-
-    it("should create a message in an existing conversation", async () => {
-      const newMessage = {
-        text: "Hello",
-        conversationId: "existingConversationId",
-        senderType: "user",
-      };
-      const createdMessage = {
-        _id: "messageId",
-        ...newMessage,
-      };
-
-      Conversation.findById.mockResolvedValue(true);
-      Message.create.mockResolvedValue(createdMessage);
-      Conversation.findByIdAndUpdate.mockResolvedValue({
-        _id: newMessage.conversationId,
-        messages: [createdMessage._id],
-      });
-
-      const result = await createMessageService(newMessage);
-
-      expect(Message.create).toHaveBeenCalledWith(newMessage);
-      expect(result).toBe(createdMessage);
-    });
-
-    it("should handle unexpected errors during message creation", async () => {
-      const newMessage = {
-        text: "Test",
-        conversationId: "faultyConversationId",
-        senderType: "user",
-      };
-
-      Conversation.findById.mockResolvedValue(true); // Simulate an existing conversation
-      Message.create.mockRejectedValue(new Error("Database error")); // Force a database error during message creation
-
-      await expect(createMessageService(newMessage)).rejects.toThrow(
-        "Database error"
-      );
-    });
+const createError = require("http-errors");
+describe("createMessageService", () => {
+  beforeEach(() => {
+    // Clear all mocks before each test
+    jest.clearAllMocks();
   });
+  it("should handle errors when message creation fails", async () => {
+    const newMessage = {
+      conversationId: "123",
+      text: "Hello",
+      senderType: "user",
+    };
+    Conversation.findById.mockResolvedValue({ _id: "123" });
+    Message.create.mockRejectedValue(new Error("Database error"));
+
+    await expect(createMessageService(newMessage)).rejects.toThrow(
+      "Database error"
+    );
+  });
+  it("should throw an error if conversation does not exist", async () => {
+    // Setup
+    const newMessage = {
+      conversationId: "123",
+      text: "Hello",
+      senderType: "user",
+    };
+    Conversation.findById.mockResolvedValue(null);
+
+    // Assert
+    await expect(createMessageService(newMessage)).rejects.toThrow(
+      "Conversation not found"
+    );
+  });
+  it("should throw an error if updating the conversation fails", async () => {
+    const newMessage = {
+      conversationId: "123",
+      text: "Hello",
+      senderType: "user",
+    };
+    const mockMessage = {
+      _id: "message123",
+      text: "Hello",
+      conversationId: "123",
+      senderType: "user",
+    };
+    Conversation.findById.mockResolvedValue({ _id: "123" });
+    Message.create.mockResolvedValue(mockMessage);
+    Conversation.findByIdAndUpdate.mockResolvedValue(null);
+
+    await expect(createMessageService(newMessage)).rejects.toThrow(
+      "Failed to update conversation"
+    );
+  });
+  it("should create a message and update conversation successfully", async () => {
+    // Setup
+    const newMessage = {
+      conversationId: "123",
+      text: "Hello",
+      senderType: "user",
+    };
+    const mockMessage = {
+      _id: "message123",
+      text: "Hello",
+      conversationId: "123",
+      senderType: "user",
+    };
+    Conversation.findById.mockResolvedValue({ _id: "123", messages: [] });
+    Message.create.mockResolvedValue(mockMessage);
+    Conversation.findByIdAndUpdate.mockResolvedValue({
+      _id: "123",
+      messages: ["message123"],
+    });
+
+    // Act
+    const result = await createMessageService(newMessage);
+
+    // Assert
+    expect(result).toEqual(mockMessage);
+    expect(Conversation.findByIdAndUpdate).toHaveBeenCalledWith(
+      "123",
+      { $push: { messages: "message123" } },
+      { new: true }
+    );
+  });
+
+  // More test cases for different scenarios
 });
