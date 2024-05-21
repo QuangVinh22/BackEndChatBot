@@ -1,6 +1,8 @@
-import 'package:chatbot/Models/Conversation.dart';
-import 'package:chatbot/Screen/conversationdeltails.dart';
+import 'package:chatbot/Models/conversation.dart';
+import 'package:chatbot/Screen/Conversations/new_conversations.dart';
+import 'package:chatbot/Screen/Conversations/conversationdeltails.dart';
 import 'package:chatbot/Service/conversations_service.dart';
+
 import 'package:chatbot/Widgets/SettingButton.dart';
 import 'package:flutter/material.dart';
 
@@ -23,6 +25,65 @@ class _DashBoardState extends State<DashBoard> {
 
   final ApiService apiService = ApiService();
   Future<ApiResponse>? listConversationsFuture;
+  Future<void> _createNewConversation(name) async {
+    try {
+      ApiResponseForSingle response =
+          await ApiService().createaConversations(name);
+      // Xử lý response, ví dụ lưu trữ ID cuộc hội thoại mới, cập nhật UI,...
+      if (!mounted) return;
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) =>
+                NewConversations(conversation: response.data)),
+      );
+
+      // Cập nhật danh sách cuộc hội thoại hoặc chuyển người dùng đến màn hình cuộc hội thoại mới
+    } catch (error) {
+      print("Failed to create new conversation: $error");
+      // Hiển thị lỗi (nếu có) cho người dùng
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to create new conversation: $error')),
+      );
+    }
+  }
+
+  //
+  Future<void> _showNameDialog() async {
+    String? name = await showDialog<String>(
+      context: context,
+      builder: (BuildContext context) {
+        TextEditingController _nameController = TextEditingController();
+        return AlertDialog(
+          title: const Text('Enter Conversation Name'),
+          content: TextField(
+            controller: _nameController,
+            decoration: const InputDecoration(hintText: "Conversation Name"),
+            style: const TextStyle(color: Colors.black),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop(_nameController.text);
+              },
+            ),
+          ],
+        );
+      },
+    );
+
+    if (name != null && name.isNotEmpty) {
+      _createNewConversation(name);
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -37,29 +98,15 @@ class _DashBoardState extends State<DashBoard> {
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 52, 53, 65),
         leading: IconButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => const ConversationDetails(
-                        hasUserAsked: false,
-                      )),
-            );
-          },
+          onPressed: () {},
           icon: const Icon(
             Icons.messenger_outline_sharp,
             color: Colors.white,
           ),
         ),
         title: TextButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => const ConversationDetails(
-                        hasUserAsked: false,
-                      )),
-            );
+          onPressed: () async {
+            _showNameDialog();
           },
           child: const Text(
             "New Chat",
@@ -137,10 +184,6 @@ class _DashBoardState extends State<DashBoard> {
                                       color: Colors.white,
                                     ),
                                   ),
-                                  IconButton(
-                                      onPressed: () {},
-                                      icon: const Icon(Icons.arrow_forward),
-                                      color: Colors.white)
                                 ],
                               ),
                               const Divider(),

@@ -160,7 +160,7 @@ class WelcomeScreen3 extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => DashBoard()),
+                  MaterialPageRoute(builder: (context) => const DashBoard()),
                 );
               },
               child: const Text(

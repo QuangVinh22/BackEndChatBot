@@ -9,7 +9,6 @@ class TokenStorage {
       await _storage.write(key: 'refreshToken', value: refreshToken);
       return true; // Lưu thành công
     } catch (e) {
-      print('Error saving token: $e');
       return false; // Lưu thất bại
     }
   }

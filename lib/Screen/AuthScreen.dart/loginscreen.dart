@@ -3,18 +3,30 @@ import 'package:chatbot/Screen/AuthScreen.dart/registerscreen.dart';
 import 'package:chatbot/Screen/startscreen.dart';
 import 'package:chatbot/Service/auth_service.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
 
   @override
-  _LoginScreenState createState() => _LoginScreenState();
+  LoginScreenState createState() => LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _isLoading = false;
+
+  late AuthServiceApi authService; // Khai báo authService
+  late http.Client client; // Khai báo http client
+  @override
+  void initState() {
+    super.initState();
+    client = http.Client(); // Khởi tạo http client
+    authService =
+        AuthServiceApi(client: client); // Inject client vào AuthServiceApi
+  }
+
   Future<void> _login(String email, String password) async {
     setState(() {
       _isLoading = true;
@@ -22,7 +34,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       // Gọi API và nhận dữ liệu người dùng
-      User user = await AuthServiceApi().loginService(email, password);
+      User user = await authService.loginService(email, password);
 
       // Kiểm tra xem state có mounted không trước khi cập nhật UI
       if (!mounted) return;
@@ -83,7 +95,7 @@ class _LoginScreenState extends State<LoginScreen> {
         return AlertDialog(
           backgroundColor: const Color.fromARGB(255, 52, 53, 65),
           title: const Text(
-            'Đăng Nhập thành công',
+            'Đăng nhập thành công',
             style: TextStyle(
                 fontSize: 18, color: Colors.white, fontWeight: FontWeight.w600),
           ),

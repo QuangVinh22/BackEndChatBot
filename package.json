@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "mockito": "^1.0.7"
+  }
+}

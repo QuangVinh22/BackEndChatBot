@@ -4,7 +4,6 @@ class SettingButton extends StatelessWidget {
   const SettingButton({super.key});
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
     return Container(
       color: Colors.black,
       child: Padding(

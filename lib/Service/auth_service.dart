@@ -27,8 +27,19 @@ class InvalidatedEmailorPassword implements Exception {
   String toString() => message;
 }
 
+class HttpHelper {
+  static final client = http.Client();
+
+  static Future<http.Response> post(String url,
+      {Map<String, String>? headers, Object? body}) {
+    return client.post(Uri.parse(url), headers: headers, body: body);
+  }
+}
+
 class AuthServiceApi {
+  final http.Client client;
   final String urlApi = "https://backendchatbot-7keg.onrender.com";
+  AuthServiceApi({required this.client});
   Future<User> registerService(String username, String password) async {
     var body = json.encode({
       'email': username,
@@ -69,10 +80,11 @@ class AuthServiceApi {
       String accessToken = jsonResponse['data']['accessToken'];
       String refreshToken = jsonResponse['data']['refreshToken'];
       //Gọi tới helper lưu token lại
-      bool result = await TokenStorage().saveToken(accessToken, refreshToken);
+      await TokenStorage().saveToken(accessToken, refreshToken);
       // In accessToken để kiểm tra
 
       var userResponse = SingleUserResponse.fromJson(jsonResponse).data;
+      client.close();
       return userResponse;
     } else if (response.statusCode == 401) {
       throw InvalidatedEmailorPassword("Sai tên đăng nhập hoặc mật khẩu");

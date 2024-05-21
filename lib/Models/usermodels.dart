@@ -1,7 +1,7 @@
 class SingleUserResponse {
   final int ec;
   final User data;
-  
+
   SingleUserResponse({required this.ec, required this.data});
 
   factory SingleUserResponse.fromJson(Map<String, dynamic> json) {
@@ -29,7 +29,6 @@ class User {
       this.deleted});
 
   factory User.fromJson(Map<String, dynamic> json) {
-    print("JSON data: $json");
     return User(
       id: json['_id'] ?? "cc",
       username: json[

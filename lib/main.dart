@@ -1,5 +1,4 @@
 import 'package:chatbot/Screen/AuthScreen.dart/loginscreen.dart';
-import 'package:chatbot/Screen/startscreen.dart';
 import 'package:flutter/material.dart';
 
 void main() {

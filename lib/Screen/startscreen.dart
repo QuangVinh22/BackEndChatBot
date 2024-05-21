@@ -23,13 +23,6 @@ class GetStartedScreen extends StatelessWidget {
                     color: Colors.white,
                   ),
                 ),
-                const Text(
-                  "ChatGPT",
-                  style: TextStyle(
-                      fontSize: 40,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600),
-                ),
                 const SizedBox(height: 20),
                 SizedBox(
                   width: 300,

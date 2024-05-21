@@ -5,14 +5,13 @@ class ContainerWidgets extends StatelessWidget {
   final String textOutSide;
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
     return Container(
       decoration: BoxDecoration(
         border: Border.all(width: 0),
         borderRadius: const BorderRadius.all(
           Radius.circular(10),
         ), //BorderRadius.all
-        color: Color.fromARGB(255, 63, 63, 74),
+        color: const Color.fromARGB(255, 63, 63, 74),
       ),
       child: SizedBox(
         width: 350,
